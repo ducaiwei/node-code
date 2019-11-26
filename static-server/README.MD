@@ -16,6 +16,7 @@
 1. http缓存分为强制缓存、协商缓存<br/>
     1.1. 强制缓存是指服务器设置了Expires或者Cache-Control: max-age响应头;指定文件的缓存时长<br/>
     浏览器再次请求时,缓存还未过期,浏览器会直接读取缓存的文件,不会向服务器发起请求<br/>
+    
     1.2. 协商缓存是指服务器在返回时,设置了Last-Modified、Etag响应头;<br/>
         Last-Modified是当前文件最后的修改时间,Etag(可以通过crypto模块生成)是文件唯一令牌<br/>
         当浏览器再次向服务器发起请求时,会上述两个头部的值通过if-modified-since和if-none-match<br/>

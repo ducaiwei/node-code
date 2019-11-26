@@ -1,0 +1,25 @@
+#!/usr/bin/env node
+
+const program = require('commander');
+program.name('my-server');
+const configs = {
+    '-p,--port <val>': 'set http-server port',
+    '-d,--dir <val>': 'set http-server directory'
+}
+for(let key in configs) {
+    program.option(key, configs[key]);
+}
+program.on('--help', function() {
+    console.log('Examples:');
+    console.log('static-server --p 3000');
+})
+
+const obj = program.parse(process.argv);
+const config = {
+    port: 3000,
+    dir: process.cwd(),
+    ...obj
+}
+
+const Server = require('../lib/Server');
+new Server(config).start();

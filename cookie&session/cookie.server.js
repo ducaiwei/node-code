@@ -19,14 +19,26 @@ const signFn = value => {
     .replace(/\=/, '');
 };
 // 获取cookie
-const getCookie = (req, opts) => {
-  const cookies = req.headers['cookie'];
+const getCookie = (req, key, opts) => {
+  let cookies = req.headers['cookie'];
   // querystring.parse解析url参数
   // querystring.parse(str[,sep[,eq[,options]]])
   // sep 用来分割每一对键和值的  默认是&
   // eq 用来分隔查询字符串中的键和值的子字符串 默认是=
-  let obj = querystring.parse(cookies, '; ');
-  return obj;
+  cookies = querystring.parse(cookies, '; ');
+  const { signed } = opts;
+  let cookie = cookies[key];
+  if (cookie) { // 加签校验
+    const [value, sign] = cookie.includes('.') ? cookie.split('.'): [cookies];
+    if (signed) {
+        if (sign === signFn(value)) {
+            return value;
+        }
+        return 'cookie值有篡改';
+    }
+    return value;
+  }
+  return '';
 };
 let cookies = [];
 // 设置cookie
@@ -61,10 +73,12 @@ const setCookie = (res, key, value, opts) => {
 };
 http
   .createServer((req, res) => {
+    res.setHeader('Content-Type', 'text/html;charset=utf-8');
     if (req.url === '/read') {
       // 读取cookie
-      const cookies = getCookie(req, { signed: true });
-      res.end(JSON.stringify(cookies));
+      const userName = getCookie(req, 'userName', { signed: true });
+      const userId = getCookie(req, 'userId', { signed: true });
+      res.end(JSON.stringify({userName, userId}));
     } else if (req.url === '/write') {
       // 写cookie
       setCookie(res, 'userName', 'nelson', { signed: true, httpOnly: true });
@@ -74,7 +88,6 @@ http
         httpOnly: true,
         domain: '.weidu.shop'
       });
-      res.setHeader('Content-Type', 'text/html;charset=utf-8');
       res.end('写入cookie成功');
     }
   })
